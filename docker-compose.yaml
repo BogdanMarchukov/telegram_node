@@ -1,0 +1,19 @@
+version: '3'
+services:
+  db:
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DATABASE: ${POSTGRES_DATABASE}
+      POSTGRES_HOST: ${POSTGRES_HOST}
+    container_name: pg-telegram
+    ports:
+      #      - "127.0.0.1:5432:5432"
+      - "5430:5432" # open host for superset purposes
+    volumes:
+      - ./pgdata:/var/lib/postgresql/data
+volumes:
+  db-data:
+    driver: local

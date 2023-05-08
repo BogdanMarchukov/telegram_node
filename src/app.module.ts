@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import configuration from './common/config/configuration';
-import { BotModule } from './bot/bot.module';
-import { TelegrafModule } from 'nestjs-telegraf';
+import configuration from './config/configuration';
+import { BotModule } from './modules/bot/bot.module';
+import { SequelizeModule } from '@nestjs/sequelize';
 
 @Module({
   imports: [
@@ -11,6 +11,19 @@ import { TelegrafModule } from 'nestjs-telegraf';
       load: [configuration],
     }),
     BotModule,
+    SequelizeModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: (configService: ConfigService) => ({
+        dialect: configService.get('database.dialect') || 'postgres',
+        host: configService.get('database.host') || '127.0.0.1',
+        port: +configService.get('database.port') || 5430,
+        username: configService.get('database.userName') || 'postgres',
+        password: configService.get('database.password') || 'mysecretpassword',
+        database: configService.get('database.database') || 'postgres',
+        models: [],
+      }),
+      inject: [ConfigService],
+    }),
   ],
 })
 export class AppModule {}
