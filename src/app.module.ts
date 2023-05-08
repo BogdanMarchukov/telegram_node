@@ -1,12 +1,16 @@
 import { Module } from '@nestjs/common';
-import {ConfigModule} from "@nestjs/config";
-import { BotModule } from './telegram/bot.module';
-import configuration from "./common/config/configuration";
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import configuration from './common/config/configuration';
+import { BotModule } from './bot/bot.module';
+import { TelegrafModule } from 'nestjs-telegraf';
 
 @Module({
-  imports: [ConfigModule.forRoot({
-    isGlobal: true,
-    load: [configuration],
-  }), BotModule],
+  imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+      load: [configuration],
+    }),
+    BotModule,
+  ],
 })
 export class AppModule {}

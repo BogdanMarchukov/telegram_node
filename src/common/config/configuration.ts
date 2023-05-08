@@ -1,6 +1,6 @@
-import * as process from "process";
+import * as process from 'process';
 
 export default () => ({
-    token: process.env.TOKEN,
-    url: process.env.URL,
+  token: process.env.TOKEN,
+  url: process.env.URL,
 });
