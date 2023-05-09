@@ -15,7 +15,7 @@ export class BotUpdate {
 
   @Hears('GhatGpt')
   async test(ctx: Context) {
-    console.log(ctx.state.user);
+    console.log(ctx);
     await ctx.reply('это тест');
   }
 }
