@@ -4,6 +4,7 @@ import { BotUpdate } from './bot.update';
 import { TelegrafModule } from 'nestjs-telegraf';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import getUserMiddleware from '../../common/middlewars/get-user.middleware';
+import { ClientsModule, Transport } from '@nestjs/microservices';
 
 @Module({
   imports: [
@@ -15,6 +16,19 @@ import getUserMiddleware from '../../common/middlewars/get-user.middleware';
         middlewares: [getUserMiddleware],
       }),
     }),
+    ClientsModule.register([
+      {
+        name: 'GPT_SERVICE',
+        transport: Transport.RMQ,
+        options: {
+          urls: ['amqp://localhost:5672'],
+          queue: 'gpt_queue',
+          queueOptions: {
+            durable: false,
+          },
+        },
+      },
+    ]),
   ],
   providers: [BotService, BotUpdate],
 })
