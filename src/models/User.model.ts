@@ -10,5 +10,8 @@ export class User extends BaseModel<User> {
   firstName: string | null;
 
   @Column
+  activeChatId: string | null;
+
+  @Column
   chatId: number;
 }

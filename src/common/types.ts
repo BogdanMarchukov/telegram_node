@@ -31,3 +31,18 @@ export interface TelegrafContext {
   botInfo: any;
   state: any;
 }
+
+export enum RoleType {
+  Assistant = 'assistant',
+  User = 'user',
+}
+
+export type MessageGpt = {
+  role: RoleType;
+  content: string;
+};
+
+export type GptResponse = {
+  id: string;
+  message: MessageGpt[];
+};
