@@ -1,5 +1,5 @@
 import { Hears, InjectBot, On, Start, Update } from 'nestjs-telegraf';
-import { Context, Telegraf } from 'telegraf';
+import { Context, Markup, Telegraf } from 'telegraf';
 import { gptMainManu, mainManu } from './buttons';
 import { User } from '../../models/User.model';
 import { BotService } from './bot.service';
