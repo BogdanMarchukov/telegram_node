@@ -73,6 +73,9 @@ export class BotUpdate {
         );
         await ctx.reply(this.botService.getAssistantText(result.message));
       }
+      {
+        await ctx.reply('Выберети услугу', mainManu());
+      }
     } catch (e) {
       await ctx.reply('ошибка');
     }
