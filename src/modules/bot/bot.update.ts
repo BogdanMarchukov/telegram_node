@@ -26,12 +26,17 @@ export class BotUpdate {
 
   @Hears('Главное меню')
   async returnMainManu(ctx: Context) {
-    await ctx.reply('Это меню управления чатами Gtp', mainManu());
+    const user: User = ctx.state.user;
+    await user.update({
+      activeChatId: null,
+    });
+    await ctx.reply('Выберети услугу', mainManu());
   }
 
   @Hears('Новый чат')
   async createNawChat(ctx: Context) {
     const user: User = ctx.state.user;
+    await this.bot.telegram.sendChatAction(ctx.chat.id, 'typing');
     try {
       const result = await this.botService.createNawChat(
         user,
@@ -47,11 +52,17 @@ export class BotUpdate {
     }
   }
 
+  @Hears('VPN')
+  async sendVpnMenu(cxt: Context) {
+    await cxt.reply('Скоро. Сервис в разработке');
+  }
+
   @On('message')
   async continueChat(ctx: any) {
     try {
       const user: User = ctx.state.user;
       if (user.activeChatId && ctx.message.text) {
+        await this.bot.telegram.sendChatAction(ctx.chat.id, 'typing');
         const result = await this.botService.sendMessageToActiveChat(
           user.activeChatId,
           {

@@ -20,7 +20,7 @@ export function gptMainManu() {
       keyboard: [
         [
           Markup.button.callback('Новый чат', 'Новый чат'),
-          Markup.button.callback('Список чатов', 'Список чатов'),
+          //Markup.button.callback('Список чатов', 'Список чатов'),
           Markup.button.callback('Главное меню', 'Главное меню'),
         ],
       ],
