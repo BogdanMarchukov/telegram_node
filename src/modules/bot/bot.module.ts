@@ -5,6 +5,7 @@ import { TelegrafModule } from 'nestjs-telegraf';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import getUserMiddleware from '../../common/middlewars/get-user.middleware';
 import { ClientsModule, Transport } from '@nestjs/microservices';
+import { MyLoggerModule } from '../my-logger/my-logger.module';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
         },
       },
     ]),
+    MyLoggerModule,
   ],
   providers: [BotService, BotUpdate],
 })

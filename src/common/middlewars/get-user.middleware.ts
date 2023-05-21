@@ -8,13 +8,19 @@ export default async (ctx: TelegrafContext, next) => {
     },
   });
   if (!user) {
-    ctx.state.user = await User.create({
-      userName: ctx.update?.message?.from?.username,
-      firstName: ctx.update?.message?.from?.first_name,
-      chatId: ctx.update?.message?.chat?.id,
-    });
+    ctx.state.user = {
+      user: await User.create({
+        userName: ctx.update?.message?.from?.username,
+        firstName: ctx.update?.message?.from?.first_name,
+        chatId: ctx.update?.message?.chat?.id,
+      }),
+      isNewUser: true,
+    };
   } else {
-    ctx.state.user = user;
+    ctx.state.user = {
+      user,
+      isNewUser: false,
+    };
   }
   await next();
 };

@@ -12,4 +12,5 @@ export default () => ({
     port: process.env.POSTGRES_PORT,
   },
   gpt_queue: process.env.GPT_QUEUE,
+  logChatId: process.env.LOG_CHAT_ID,
 });
