@@ -3,10 +3,8 @@ services:
   db:
     image: postgres
     restart: always
-    environment:
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DATABASE: ${POSTGRES_DATABASE}
+    env_file:
+      - .env
     container_name: pg-telegram
     ports:
       #      - "127.0.0.1:5432:5432"
@@ -16,6 +14,7 @@ services:
   telegram:
     image: bogdanmarchukv/telegram:v2
     restart: always
+    container_name: telegram_node
     links:
       - db
     env_file:
