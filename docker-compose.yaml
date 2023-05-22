@@ -7,13 +7,25 @@ services:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DATABASE: ${POSTGRES_DATABASE}
-      POSTGRES_HOST: ${POSTGRES_HOST}
     container_name: pg-telegram
     ports:
       #      - "127.0.0.1:5432:5432"
       - "5430:5432" # open host for superset purposes
     volumes:
       - ./pgdata:/var/lib/postgresql/data
+  telegram:
+    image: bogdanmarchukv/telegram:v2
+    restart: always
+    links:
+      - db
+    env_file:
+      - .env
+    environment:
+      POSTGRES_HOST: db
+    command: node dist/main
+    depends_on:
+      - db
+
 volumes:
   db-data:
     driver: local
