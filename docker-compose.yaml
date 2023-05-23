@@ -1,6 +1,6 @@
 version: '3'
 services:
-  db:
+  db-telegram:
     image: postgres
     restart: always
     env_file:
@@ -10,21 +10,58 @@ services:
       #      - "127.0.0.1:5432:5432"
       - "5430:5432" # open host for superset purposes
     volumes:
-      - ./pgdata:/var/lib/postgresql/data
+      - ./pgdata-telegramm:/var/lib/postgresql/data
+  db-gpt:
+    image: postgres
+    restart: always
+    env_file:
+      - .env.gpt
+    container_name: pg-gpt
+    ports:
+      #      - "127.0.0.1:5432:5432"
+      - "5433:5432" # open host for superset purposes
+    volumes:
+      - ./pgdata-gpt:/var/lib/postgresql/data
+  rabbitmq:
+    restart: always
+    image: rabbitmq:3-management-alpine
+    container_name: 'rabbitmq_node'
+    ports:
+      - 5672:5672
+      - 15672:15672
   telegram:
-    image: bogdanmarchukv/telegram:v2
+    image: bogdanmarchukv/telegram:v6
     restart: always
     container_name: telegram_node
     links:
-      - db
+      - db-telegram
     env_file:
       - .env
     environment:
-      POSTGRES_HOST: db
-    command: node dist/main
+      POSTGRES_HOST: db-telegram
+      RMQ_HOST: rabbitmq
+    command: npm run start:prod
     depends_on:
-      - db
+      - db-telegram
+      - rabbitmq
+  gpt:
+    image: bogdanmarchukv/gpt:v5
+    restart: always
+    container_name: gpt-node
+    links:
+      - db-gpt
+    env_file:
+      - .env.gpt
+    environment:
+      RMQ_HOST: rabbitmq
+      POSTGRES_HOST: db-gpt
+    command: npm run start:prod
+    depends_on:
+      - db-gpt
+      - rabbitmq
 
 volumes:
-  db-data:
+  pgdata-telegramm:
+    driver: local
+  pgdata-gpt:
     driver: local

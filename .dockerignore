@@ -2,3 +2,5 @@ node_modules
 npm-debug.log
 pgdata
 .env
+pgdata-gpt
+pgdata-telegramm

@@ -6,6 +6,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import getUserMiddleware from '../../common/middlewars/get-user.middleware';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { MyLoggerModule } from '../my-logger/my-logger.module';
+import * as process from "process";
 
 @Module({
   imports: [
@@ -22,7 +23,7 @@ import { MyLoggerModule } from '../my-logger/my-logger.module';
         name: 'GPT_SERVICE',
         transport: Transport.RMQ,
         options: {
-          urls: ['amqp://localhost:5672'],
+          urls: [`amqp://${process.env.RMQ_HOST}:5672`],
           queue: 'gpt_queue',
           queueOptions: {
             durable: false,
