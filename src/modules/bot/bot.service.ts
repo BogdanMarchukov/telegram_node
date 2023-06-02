@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { User } from '../../models/User.model';
 import { ClientProxy } from '@nestjs/microservices';
-import { timeout } from 'rxjs';
+import { retry, timeout } from 'rxjs';
 import { GptResponse, MessageGpt } from '../../common/types';
 
 @Injectable()
@@ -36,7 +36,7 @@ export class BotService {
           message,
           commonId,
         })
-        .pipe(timeout(15000))
+        .pipe(timeout(15000), retry(2))
         .subscribe({
           next: (data) => resolve(data),
           error: (error) => reject(error),
