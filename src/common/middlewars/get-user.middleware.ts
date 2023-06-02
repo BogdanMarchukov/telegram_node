@@ -2,11 +2,14 @@ import { User } from '../../models/User.model';
 import { TelegrafContext } from '../types';
 
 export default async (ctx: TelegrafContext, next) => {
-  const user = await User.findOne({
-    where: {
-      chatId: ctx.update.message.chat.id,
-    },
-  });
+  let user;
+  if (ctx.update?.message?.chat?.id) {
+    user = await User.findOne({
+      where: {
+        chatId: ctx.update?.message?.chat?.id,
+      },
+    });
+  }
   if (!user) {
     ctx.state.user = {
       user: await User.create({
