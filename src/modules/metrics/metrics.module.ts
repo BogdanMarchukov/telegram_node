@@ -3,5 +3,6 @@ import { MetricsService } from './metrics.service';
 
 @Module({
   providers: [MetricsService],
+  exports: [MetricsService],
 })
 export class MetricsModule {}

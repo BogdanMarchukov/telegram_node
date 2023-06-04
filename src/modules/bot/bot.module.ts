@@ -6,10 +6,14 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import getUserMiddleware from '../../common/middlewars/get-user.middleware';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { MyLoggerModule } from '../my-logger/my-logger.module';
-import * as process from "process";
+import * as process from 'process';
+import { MetricsModule } from '../metrics/metrics.module';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
+    ScheduleModule.forRoot(),
+    MetricsModule,
     TelegrafModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],

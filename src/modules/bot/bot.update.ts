@@ -5,7 +5,9 @@ import { User } from '../../models/User.model';
 import { BotService } from './bot.service';
 import { RoleType } from '../../common/types';
 import { MyLoggerService } from '../my-logger/my-logger.service';
-import { ignoreElements, from, interval } from 'rxjs';
+import { interval } from 'rxjs';
+import { MetricsService } from '../metrics/metrics.service';
+import { Cron } from '@nestjs/schedule';
 
 @Update()
 export class BotUpdate {
@@ -13,7 +15,13 @@ export class BotUpdate {
     @InjectBot() private readonly bot: Telegraf<Context>,
     private readonly botService: BotService,
     private readonly logger: MyLoggerService,
+    private readonly metricsService: MetricsService,
   ) {}
+  // 0 10 * * *
+  @Cron('* * * * *')
+  sentMetrics() {
+    console.log(this.metricsService.getDailyActiveUsers());
+  }
 
   @Start()
   async start(ctx: Context) {
