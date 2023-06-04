@@ -21,4 +21,11 @@ export class MyLoggerService extends ConsoleLogger {
       `Новый пользователь ${user.userName} ${user.firstName}, всего: ${countUsers}`,
     );
   }
+
+  async sentMetricActiveUser(userCount: number) {
+    return this.bot.telegram.sendMessage(
+      this.logChatId,
+      `Активных пользователей: ${userCount} `,
+    );
+  }
 }

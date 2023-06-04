@@ -17,10 +17,11 @@ export class BotUpdate {
     private readonly logger: MyLoggerService,
     private readonly metricsService: MetricsService,
   ) {}
-  // 0 10 * * *
-  @Cron('* * * * *')
-  sentMetrics() {
-    console.log(this.metricsService.getDailyActiveUsers());
+
+  @Cron('0 10 * * *')
+  async sentMetrics() {
+    const count = await this.metricsService.getDailyActiveUsers();
+    await this.logger.sentMetricActiveUser(count);
   }
 
   @Start()
