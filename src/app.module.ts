@@ -5,6 +5,7 @@ import { BotModule } from './modules/bot/bot.module';
 import { SequelizeModule } from '@nestjs/sequelize';
 import { User } from './models/User.model';
 import { MyLoggerModule } from './modules/my-logger/my-logger.module';
+import { MetricsModule } from './modules/metrics/metrics.module';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { MyLoggerModule } from './modules/my-logger/my-logger.module';
       inject: [ConfigService],
     }),
     MyLoggerModule,
+    MetricsModule,
   ],
 })
 export class AppModule {}
