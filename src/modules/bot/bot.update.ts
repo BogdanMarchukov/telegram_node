@@ -5,7 +5,7 @@ import { User } from '../../models/User.model';
 import { BotService } from './bot.service';
 import { RoleType } from '../../common/types';
 import { MyLoggerService } from '../my-logger/my-logger.service';
-import { ignoreElements } from 'rxjs';
+import { ignoreElements, from, interval } from 'rxjs';
 
 @Update()
 export class BotUpdate {
@@ -68,7 +68,9 @@ export class BotUpdate {
     try {
       const user: User = ctx.state.user.user;
       if (user.activeChatId && ctx.message.text) {
-        await this.bot.telegram.sendChatAction(ctx.chat.id, 'typing');
+        const intervalStatus = interval(5000).subscribe({
+          next: () => this.bot.telegram.sendChatAction(ctx.chat.id, 'typing'),
+        });
         const result = await this.botService.sendMessageToActiveChat(
           user.activeChatId,
           {
@@ -77,6 +79,7 @@ export class BotUpdate {
           },
           user.id,
         );
+        intervalStatus.unsubscribe();
         await ctx.reply(this.botService.getAssistantText(result.message));
       } else {
         await ctx.reply('Выберети услугу', mainManu());

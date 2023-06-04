@@ -16,7 +16,7 @@ export class BotService {
           startMessage,
           userName: user.firstName,
         })
-        .pipe(timeout(15000))
+        .pipe(timeout(2 * 60 * 1000))
         .subscribe({
           next: (data) => resolve(data),
           error: (error) => reject(error),
@@ -36,7 +36,6 @@ export class BotService {
           message,
           commonId,
         })
-        .pipe(timeout(15000), retry(2))
         .subscribe({
           next: (data) => resolve(data),
           error: (error) => reject(error),
