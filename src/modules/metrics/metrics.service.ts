@@ -9,8 +9,8 @@ export class MetricsService {
     return User.count({
       where: {
         lastActiveAt: {
-          [Op.gte]: DateTime.now().startOf('day').toISO(),
-          [Op.lte]: DateTime.now().endOf('day').toISO(),
+          [Op.gte]: DateTime.now().minus({ day: 1 }).startOf('day').toISO(),
+          [Op.lte]: DateTime.now().minus({ day: 1 }).endOf('day').toISO(),
         },
       },
     });
