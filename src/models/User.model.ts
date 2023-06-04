@@ -14,4 +14,7 @@ export class User extends BaseModel<User> {
 
   @Column
   chatId: number;
+
+  @Column
+  lastActiveAt: Date | null;
 }
