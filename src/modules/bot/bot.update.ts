@@ -24,7 +24,7 @@ export class BotUpdate {
     await this.logger.sentMetricActiveUser(this.countActiveUserForDay);
   }
 
-  @Cron('58 23 * * *')
+  @Cron('59 23 * * *')
   async setActiveUserForDay() {
     this.countActiveUserForDay =
       await this.metricsService.getDailyActiveUsers();
