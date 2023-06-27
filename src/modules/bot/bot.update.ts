@@ -11,6 +11,7 @@ import { Cron } from '@nestjs/schedule';
 
 @Update()
 export class BotUpdate {
+  private countActiveUserForDay = 0;
   constructor(
     @InjectBot() private readonly bot: Telegraf<Context>,
     private readonly botService: BotService,
@@ -20,8 +21,13 @@ export class BotUpdate {
 
   @Cron('0 10 * * *')
   async sentMetrics() {
-    const count = await this.metricsService.getDailyActiveUsers();
-    await this.logger.sentMetricActiveUser(count);
+    await this.logger.sentMetricActiveUser(this.countActiveUserForDay);
+  }
+
+  @Cron('58 23 * * *')
+  async setActiveUserForDay() {
+    this.countActiveUserForDay =
+      await this.metricsService.getDailyActiveUsers();
   }
 
   @Start()
