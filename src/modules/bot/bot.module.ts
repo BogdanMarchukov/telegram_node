@@ -20,6 +20,7 @@ import { ScheduleModule } from '@nestjs/schedule';
       useFactory: (configService: ConfigService) => ({
         token: configService.get<string>('token'),
         middlewares: [getUserMiddleware],
+        handlerTimeout: 9000000,
       }),
     }),
     ClientsModule.register([

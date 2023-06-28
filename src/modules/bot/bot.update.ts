@@ -5,7 +5,7 @@ import { User } from '../../models/User.model';
 import { BotService } from './bot.service';
 import { RoleType } from '../../common/types';
 import { MyLoggerService } from '../my-logger/my-logger.service';
-import { interval } from 'rxjs';
+import { timer } from 'rxjs';
 import { MetricsService } from '../metrics/metrics.service';
 import { Cron } from '@nestjs/schedule';
 
@@ -83,7 +83,7 @@ export class BotUpdate {
     try {
       const user: User = ctx.state.user.user;
       if (user.activeChatId && ctx.message.text) {
-        const intervalStatus = interval(5000).subscribe({
+        const intervalStatus = timer(500, 5000).subscribe({
           next: () => this.bot.telegram.sendChatAction(ctx.chat.id, 'typing'),
         });
         const result = await this.botService.sendMessageToActiveChat(
