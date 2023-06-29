@@ -9,6 +9,7 @@ import { MyLoggerModule } from '../my-logger/my-logger.module';
 import * as process from 'process';
 import { MetricsModule } from '../metrics/metrics.module';
 import { ScheduleModule } from '@nestjs/schedule';
+import { NotificationModule } from '../notification/notification.module';
 
 @Module({
   imports: [
@@ -37,6 +38,7 @@ import { ScheduleModule } from '@nestjs/schedule';
       },
     ]),
     MyLoggerModule,
+    NotificationModule,
   ],
   providers: [BotService, BotUpdate],
 })

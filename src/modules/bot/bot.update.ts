@@ -8,6 +8,7 @@ import { MyLoggerService } from '../my-logger/my-logger.service';
 import { timer } from 'rxjs';
 import { MetricsService } from '../metrics/metrics.service';
 import { Cron } from '@nestjs/schedule';
+import { NotificationService } from '../notification/notification.service';
 
 @Update()
 export class BotUpdate {
@@ -17,6 +18,7 @@ export class BotUpdate {
     private readonly botService: BotService,
     private readonly logger: MyLoggerService,
     private readonly metricsService: MetricsService,
+    private readonly notificationService: NotificationService,
   ) {}
 
   @Cron('0 10 * * *')
@@ -82,22 +84,29 @@ export class BotUpdate {
   async continueChat(ctx: any) {
     try {
       const user: User = ctx.state.user.user;
-      if (user.activeChatId && ctx.message.text) {
-        const intervalStatus = timer(500, 5000).subscribe({
-          next: () => this.bot.telegram.sendChatAction(ctx.chat.id, 'typing'),
-        });
-        const result = await this.botService.sendMessageToActiveChat(
-          user.activeChatId,
-          {
-            role: RoleType.User,
-            content: ctx.message.text,
-          },
-          user.id,
-        );
-        intervalStatus.unsubscribe();
-        await ctx.reply(this.botService.getAssistantText(result.message));
+      if (user.isAdmin) {
+        if (ctx?.message?.text) {
+          await this.notificationService.sendNotification(ctx.message.text);
+          await ctx.reply('Рассылка выполнена');
+        }
       } else {
-        await ctx.reply('Выберети услугу', mainManu());
+        if (user.activeChatId && ctx?.message?.text) {
+          const intervalStatus = timer(500, 5000).subscribe({
+            next: () => this.bot.telegram.sendChatAction(ctx.chat.id, 'typing'),
+          });
+          const result = await this.botService.sendMessageToActiveChat(
+            user.activeChatId,
+            {
+              role: RoleType.User,
+              content: ctx.message.text,
+            },
+            user.id,
+          );
+          intervalStatus.unsubscribe();
+          await ctx.reply(this.botService.getAssistantText(result.message));
+        } else {
+          await ctx.reply('Выберети услугу', mainManu());
+        }
       }
     } catch (e) {
       await ctx.reply('ошибка');

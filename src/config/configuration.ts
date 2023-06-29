@@ -13,4 +13,5 @@ export default () => ({
   },
   gpt_queue: process.env.GPT_QUEUE,
   logChatId: process.env.LOG_CHAT_ID,
+  notificationChatId: process.env.NOTIFICATION_CHAT_ID,
 });

@@ -17,4 +17,7 @@ export class User extends BaseModel<User> {
 
   @Column
   lastActiveAt: Date | null;
+
+  @Column
+  isAdmin: boolean;
 }
