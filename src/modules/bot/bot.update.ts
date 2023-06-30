@@ -5,7 +5,6 @@ import { User } from '../../models/User.model';
 import { BotService } from './bot.service';
 import { RoleType } from '../../common/types';
 import { MyLoggerService } from '../my-logger/my-logger.service';
-import { timer } from 'rxjs';
 import { MetricsService } from '../metrics/metrics.service';
 import { Cron } from '@nestjs/schedule';
 import { NotificationService } from '../notification/notification.service';
@@ -80,6 +79,26 @@ export class BotUpdate {
     await cxt.reply('Скоро. Сервис в разработке');
   }
 
+  @On('voice')
+  async sendAudio(ctx: any) {
+    try {
+      const user: User = ctx.state.user.user;
+      const fileId = ctx?.update?.message?.voice?.file_id;
+      if (user && fileId && user.activeChatId) {
+        const href = (
+          await ctx.telegram.getFileLink(ctx.update.message.voice.file_id)
+        ).toString();
+        await this.botService.senderToGpt(ctx, () => {
+          return this.botService.sendAudioMessage(
+            user.activeChatId,
+            href,
+            user.id,
+          );
+        });
+      }
+    } catch (e) {}
+  }
+
   @On('message')
   async continueChat(ctx: any) {
     try {
@@ -91,19 +110,16 @@ export class BotUpdate {
         }
       } else {
         if (user.activeChatId && ctx?.message?.text) {
-          const intervalStatus = timer(500, 5000).subscribe({
-            next: () => this.bot.telegram.sendChatAction(ctx.chat.id, 'typing'),
+          await this.botService.senderToGpt(ctx, () => {
+            return this.botService.sendMessageToActiveChat(
+              user.activeChatId,
+              {
+                role: RoleType.User,
+                content: ctx.message.text,
+              },
+              user.id,
+            );
           });
-          const result = await this.botService.sendMessageToActiveChat(
-            user.activeChatId,
-            {
-              role: RoleType.User,
-              content: ctx.message.text,
-            },
-            user.id,
-          );
-          intervalStatus.unsubscribe();
-          await ctx.reply(this.botService.getAssistantText(result.message));
         } else {
           await ctx.reply('Выберети услугу', mainManu());
         }
