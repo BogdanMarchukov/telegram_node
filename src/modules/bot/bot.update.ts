@@ -1,5 +1,5 @@
-import { Hears, InjectBot, On, Start, Update } from 'nestjs-telegraf';
-import { Context, Telegraf } from 'telegraf';
+import { Hears, On, Start, Update } from 'nestjs-telegraf';
+import { Context } from 'telegraf';
 import { gptMainManu, mainManu } from './buttons';
 import { User } from '../../models/User.model';
 import { BotService } from './bot.service';
@@ -13,7 +13,6 @@ import { NotificationService } from '../notification/notification.service';
 export class BotUpdate {
   private countActiveUserForDay = 0;
   constructor(
-    @InjectBot() private readonly bot: Telegraf<Context>,
     private readonly botService: BotService,
     private readonly logger: MyLoggerService,
     private readonly metricsService: MetricsService,
@@ -22,12 +21,13 @@ export class BotUpdate {
 
   @Cron('0 10 * * *')
   async sentMetrics() {
-    await this.logger.sentMetricActiveUser(this.countActiveUserForDay);
+    const activeUser = await this.metricsService.getMetricsForDay();
+    await this.logger.sentMetricActiveUser(activeUser);
   }
 
   @Cron('59 23 * * *')
   async setActiveUserForDay() {
-    this.countActiveUserForDay = await this.metricsService.getDailyActiveUsers();
+    this.metricsService.setMetricsForDay();
   }
 
   @Start()
@@ -42,7 +42,7 @@ export class BotUpdate {
 
   @Hears('GhatGpt')
   async getGptMainManu(ctx: Context) {
-    await ctx.reply('Это меню управления чатами Gtp', gptMainManu());
+    await ctx.reply('Это меню управления чатами Gtp', gptMainManu(ctx.state?.user?.user));
   }
 
   @Hears('Главное меню')
@@ -85,26 +85,19 @@ export class BotUpdate {
   @On('message')
   async continueChat(ctx: any) {
     const user: User = ctx.state.user.user;
-    if (user.isAdmin) {
-      if (ctx?.message?.text) {
-        await this.notificationService.sendNotification(ctx.message.text);
-        await ctx.reply('Рассылка выполнена');
-      }
+    if (user.activeChatId && ctx?.message?.text) {
+      await this.botService.senderToGpt(ctx, () => {
+        return this.botService.sendMessageToActiveChat(
+          user.activeChatId,
+          {
+            role: RoleType.User,
+            content: ctx.message.text,
+          },
+          user.id,
+        );
+      });
     } else {
-      if (user.activeChatId && ctx?.message?.text) {
-        await this.botService.senderToGpt(ctx, () => {
-          return this.botService.sendMessageToActiveChat(
-            user.activeChatId,
-            {
-              role: RoleType.User,
-              content: ctx.message.text,
-            },
-            user.id,
-          );
-        });
-      } else {
-        await ctx.reply('Выберети услугу', mainManu());
-      }
+      await ctx.reply('Выберети услугу', mainManu());
     }
   }
 }
