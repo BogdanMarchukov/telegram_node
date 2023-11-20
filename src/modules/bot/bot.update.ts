@@ -27,8 +27,7 @@ export class BotUpdate {
 
   @Cron('59 23 * * *')
   async setActiveUserForDay() {
-    this.countActiveUserForDay =
-      await this.metricsService.getDailyActiveUsers();
+    this.countActiveUserForDay = await this.metricsService.getDailyActiveUsers();
   }
 
   @Start()
@@ -58,20 +57,10 @@ export class BotUpdate {
   @Hears('Новый чат')
   async createNawChat(ctx: Context) {
     const user: User = ctx.state.user.user;
-    await this.bot.telegram.sendChatAction(ctx.chat.id, 'typing');
-    try {
-      const result = await this.botService.createNawChat(
-        user,
-        `Привет, меня зовут ${user.firstName || user.userName}`,
-      );
-      await user.update({
-        activeChatId: result.id,
-      });
-
-      await ctx.reply(this.botService.getAssistantText(result.message));
-    } catch (e) {
-      await ctx.reply('ошибка');
-    }
+    this.botService.senderToGpt(ctx, () => this.botService.createNawChat(user, `Привет, меня зовут ${user.firstName || user.userName}`));
+    await user.update({
+      activeChatId: user.id,
+    });
   }
 
   @Hears('VPN')
@@ -85,15 +74,9 @@ export class BotUpdate {
       const user: User = ctx.state.user.user;
       const fileId = ctx?.update?.message?.voice?.file_id;
       if (user && fileId && user.activeChatId) {
-        const href = (
-          await ctx.telegram.getFileLink(ctx.update.message.voice.file_id)
-        ).toString();
+        const href = (await ctx.telegram.getFileLink(ctx.update.message.voice.file_id)).toString();
         await this.botService.senderToGpt(ctx, () => {
-          return this.botService.sendAudioMessage(
-            user.activeChatId,
-            href,
-            user.id,
-          );
+          return this.botService.sendAudioMessage(user.activeChatId, href, user.id);
         });
       }
     } catch (e) {}
@@ -101,31 +84,27 @@ export class BotUpdate {
 
   @On('message')
   async continueChat(ctx: any) {
-    try {
-      const user: User = ctx.state.user.user;
-      if (user.isAdmin) {
-        if (ctx?.message?.text) {
-          await this.notificationService.sendNotification(ctx.message.text);
-          await ctx.reply('Рассылка выполнена');
-        }
-      } else {
-        if (user.activeChatId && ctx?.message?.text) {
-          await this.botService.senderToGpt(ctx, () => {
-            return this.botService.sendMessageToActiveChat(
-              user.activeChatId,
-              {
-                role: RoleType.User,
-                content: ctx.message.text,
-              },
-              user.id,
-            );
-          });
-        } else {
-          await ctx.reply('Выберети услугу', mainManu());
-        }
+    const user: User = ctx.state.user.user;
+    if (user.isAdmin) {
+      if (ctx?.message?.text) {
+        await this.notificationService.sendNotification(ctx.message.text);
+        await ctx.reply('Рассылка выполнена');
       }
-    } catch (e) {
-      await ctx.reply('ошибка');
+    } else {
+      if (user.activeChatId && ctx?.message?.text) {
+        await this.botService.senderToGpt(ctx, () => {
+          return this.botService.sendMessageToActiveChat(
+            user.activeChatId,
+            {
+              role: RoleType.User,
+              content: ctx.message.text,
+            },
+            user.id,
+          );
+        });
+      } else {
+        await ctx.reply('Выберети услугу', mainManu());
+      }
     }
   }
 }

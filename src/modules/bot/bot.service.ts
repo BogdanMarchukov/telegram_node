@@ -8,15 +8,20 @@ import { Context, Telegraf } from 'telegraf';
 
 @Injectable()
 export class BotService {
-  constructor(@Inject(RmqServise.GptService) private gptClient: ClientProxy, @InjectBot() private readonly bot: Telegraf<Context>) { }
+  constructor(@Inject(RmqServise.GptService) private gptClient: ClientProxy, @InjectBot() private readonly bot: Telegraf<Context>) {}
 
   async senderToGpt(ctx: any, cb: () => Promise<GptResponse>) {
     const intervalStatus = timer(500, 5000).subscribe({
       next: () => this.bot.telegram.sendChatAction(ctx.chat.id, 'typing'),
     });
-    const result = await cb();
-    intervalStatus.unsubscribe();
-    await ctx.reply(this.getAssistantText(result.message));
+    try {
+      const result = await cb();
+      await ctx.reply(this.getAssistantText(result.message));
+      intervalStatus.unsubscribe();
+    } catch (error) {
+      intervalStatus.unsubscribe();
+      ctx.reply('Ошибка');
+    }
   }
 
   createNawChat(user: User, startMessage: string): Promise<GptResponse> {
@@ -35,7 +40,7 @@ export class BotService {
     });
   }
 
-  sendMessageToActiveChat(activeChatId: string, message: MessageGpt, commonId): Promise<GptResponse> {
+  sendMessageToActiveChat(activeChatId: string, message: MessageGpt, commonId: string): Promise<GptResponse> {
     return new Promise((resolve, reject) => {
       this.gptClient
         .send('continueChat', {
@@ -65,7 +70,7 @@ export class BotService {
     });
   }
 
-  getAssistantText(message: MessageGpt[]) {
+  private getAssistantText(message: MessageGpt[]) {
     return message[message.length - 1].content;
   }
 }
