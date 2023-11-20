@@ -2,16 +2,13 @@ import { Inject, Injectable } from '@nestjs/common';
 import { User } from '../../models/User.model';
 import { ClientProxy } from '@nestjs/microservices';
 import { timeout, timer } from 'rxjs';
-import { GptResponse, MessageGpt } from '../../common/types';
+import { GptResponse, MessageGpt, RmqServise } from '../../common/types';
 import { InjectBot } from 'nestjs-telegraf';
 import { Context, Telegraf } from 'telegraf';
 
 @Injectable()
 export class BotService {
-  constructor(
-    @Inject('GPT_SERVICE') private gptClient: ClientProxy,
-    @InjectBot() private readonly bot: Telegraf<Context>,
-  ) {}
+  constructor(@Inject(RmqServise.GptService) private gptClient: ClientProxy, @InjectBot() private readonly bot: Telegraf<Context>) { }
 
   async senderToGpt(ctx: any, cb: () => Promise<GptResponse>) {
     const intervalStatus = timer(500, 5000).subscribe({
@@ -38,11 +35,7 @@ export class BotService {
     });
   }
 
-  sendMessageToActiveChat(
-    activeChatId: string,
-    message: MessageGpt,
-    commonId,
-  ): Promise<GptResponse> {
+  sendMessageToActiveChat(activeChatId: string, message: MessageGpt, commonId): Promise<GptResponse> {
     return new Promise((resolve, reject) => {
       this.gptClient
         .send('continueChat', {
@@ -57,11 +50,7 @@ export class BotService {
     });
   }
 
-  sendAudioMessage(
-    activeChatId: string,
-    href: string,
-    commonId: string,
-  ): Promise<GptResponse> {
+  sendAudioMessage(activeChatId: string, href: string, commonId: string): Promise<GptResponse> {
     return new Promise((resolve, reject) => {
       this.gptClient
         .send('replayAudio', {

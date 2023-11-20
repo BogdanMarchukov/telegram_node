@@ -46,3 +46,7 @@ export type GptResponse = {
   id: string;
   message: MessageGpt[];
 };
+
+export enum RmqServise {
+  GptService = 'GPT_SERVICE',
+}
