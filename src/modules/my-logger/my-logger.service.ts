@@ -20,4 +20,12 @@ export class MyLoggerService extends ConsoleLogger {
   async sentMetricActiveUser(userCount: number) {
     return this.bot.telegram.sendMessage(this.logChatId, `Активных пользователей: ${userCount} `);
   }
+
+  async errorLogs(error: { status: string; message: string } | string, user: User) {
+    const errorMessage = typeof error === 'string' ? error : error.message;
+    return this.bot.telegram.sendMessage(
+      this.logChatId,
+      `error: ${errorMessage}, from user ${user?.userName || ''} ${user?.firstName || ''}`,
+    );
+  }
 }

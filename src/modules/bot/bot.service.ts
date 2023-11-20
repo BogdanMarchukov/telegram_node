@@ -5,12 +5,17 @@ import { timeout, timer } from 'rxjs';
 import { GptResponse, MessageGpt, RmqServise } from '../../common/types';
 import { InjectBot } from 'nestjs-telegraf';
 import { Context, Telegraf } from 'telegraf';
+import { MyLoggerService } from '../my-logger/my-logger.service';
 
 @Injectable()
 export class BotService {
-  constructor(@Inject(RmqServise.GptService) private gptClient: ClientProxy, @InjectBot() private readonly bot: Telegraf<Context>) {}
+  constructor(
+    @Inject(RmqServise.GptService) private gptClient: ClientProxy,
+    @InjectBot() private readonly bot: Telegraf<Context>,
+    private logService: MyLoggerService,
+  ) { }
 
-  async senderToGpt(ctx: any, cb: () => Promise<GptResponse>) {
+  async senderToGpt(ctx: Context, cb: () => Promise<GptResponse>) {
     const intervalStatus = timer(500, 5000).subscribe({
       next: () => this.bot.telegram.sendChatAction(ctx.chat.id, 'typing'),
     });
@@ -20,6 +25,7 @@ export class BotService {
       intervalStatus.unsubscribe();
     } catch (error) {
       intervalStatus.unsubscribe();
+      this.logService.errorLogs(error, ctx.state.user.user);
       ctx.reply('Ошибка');
     }
   }
