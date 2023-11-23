@@ -26,3 +26,12 @@ export function gptMainManu(user?: User) {
     },
   };
 }
+
+export function cancel() {
+  return {
+    reply_markup: {
+      keyboard: [[Markup.button.callback('Отмена', 'Отмена')]],
+      resize_keyboard: true,
+    },
+  };
+}

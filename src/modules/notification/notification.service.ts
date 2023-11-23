@@ -5,16 +5,12 @@ import { User } from '../../models/User.model';
 
 @Injectable()
 export class NotificationService {
-  constructor(@InjectBot() private readonly bot: Telegraf<Context>) {}
+  constructor(@InjectBot() private readonly bot: Telegraf<Context>) { }
 
   async sendNotification(message: string) {
-    const where = { isAdmin: false };
-    const userCount = await User.count({
-      where,
-    });
+    const userCount = await User.count();
     for (let offset = 0; offset < userCount; offset = offset + 100) {
       const users = await User.findAll({
-        where,
         limit: 100,
         offset,
       });

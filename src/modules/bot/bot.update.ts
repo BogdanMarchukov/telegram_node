@@ -1,6 +1,6 @@
 import { Hears, On, Start, Update } from 'nestjs-telegraf';
 import { Context } from 'telegraf';
-import { gptMainManu, mainManu } from './buttons';
+import { cancel, gptMainManu, mainManu } from './buttons';
 import { User } from '../../models/User.model';
 import { BotService } from './bot.service';
 import { RoleType } from '../../common/types';
@@ -11,13 +11,13 @@ import { NotificationService } from '../notification/notification.service';
 
 @Update()
 export class BotUpdate {
-  private countActiveUserForDay = 0;
+  private lastActiveAdminNewsletter: User;
   constructor(
     private readonly botService: BotService,
     private readonly logger: MyLoggerService,
     private readonly metricsService: MetricsService,
     private readonly notificationService: NotificationService,
-  ) {}
+  ) { }
 
   @Cron('0 10 * * *')
   async sentMetrics() {
@@ -45,6 +45,16 @@ export class BotUpdate {
     await ctx.reply('Это меню управления чатами Gtp', gptMainManu(ctx.state?.user?.user));
   }
 
+  @Hears('Рассылка')
+  async newsletter(ctx: Context) {
+    const user: User = ctx.state.user.user;
+    if (!user.isAdmin) {
+      await ctx.reply('Не достаточно прав');
+    }
+    this.lastActiveAdminNewsletter = user;
+    await ctx.reply('Отправьте текст рассылки', cancel());
+  }
+
   @Hears('Главное меню')
   async returnMainManu(ctx: Context) {
     const user: User = ctx.state.user.user;
@@ -68,18 +78,37 @@ export class BotUpdate {
     await cxt.reply('Скоро. Сервис в разработке');
   }
 
+  @Hears('Отмена')
+  async resetNotification(ctx: Context) {
+    const user: User = ctx.state.user.user;
+    if (user.isAdmin) {
+      this.lastActiveAdminNewsletter = undefined;
+      ctx.reply('Рассылка отменена', gptMainManu(user));
+    }
+    await ctx.reply('Привет', gptMainManu(user));
+  }
+
   @On('voice')
   async sendAudio(ctx: any) {
-    try {
-      const user: User = ctx.state.user.user;
-      const fileId = ctx?.update?.message?.voice?.file_id;
-      if (user && fileId && user.activeChatId) {
-        const href = (await ctx.telegram.getFileLink(ctx.update.message.voice.file_id)).toString();
-        await this.botService.senderToGpt(ctx, () => {
-          return this.botService.sendAudioMessage(user.activeChatId, href, user.id);
-        });
-      }
-    } catch (e) {}
+    const user: User = ctx.state.user.user;
+    const fileId = ctx?.update?.message?.voice?.file_id;
+    if (user && fileId && user.activeChatId) {
+      const href = (await ctx.telegram.getFileLink(ctx.update.message.voice.file_id)).toString();
+      await this.botService.senderToGpt(ctx, () => {
+        return this.botService.sendAudioMessage(user.activeChatId, href, user.id);
+      });
+    }
+  }
+
+  @On('message')
+  async sendNotification(ctx: any) {
+    const user: User = ctx.state.user.user;
+    const message = ctx.message?.text;
+    if (user.isAdmin && user.id === this.lastActiveAdminNewsletter?.id && message) {
+      await this.notificationService.sendNotification(message);
+      this.lastActiveAdminNewsletter = undefined;
+      ctx.reply('Рассылка выполненна', gptMainManu(user));
+    }
   }
 
   @On('message')
