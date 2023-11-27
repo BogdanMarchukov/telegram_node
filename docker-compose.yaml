@@ -29,30 +29,30 @@ services:
     ports:
       - 5672:5672
       - 15672:15672
-        # telegram:
-        #   image: bogdanmarchukv/telegram-gpt:v1.0.0
-        #   restart: always
-        #   container_name: telegram_node
-        #   links:
-        #     - db-telegram
-        #   env_file:
-        #     - .env.telegram
-        #   command: npm run start:prod
-        #   depends_on:
-        #     - db-telegram
-        #     - rabbitmq
-        # gpt:
-        #   image: bogdanmarchukv/gpt-node:v1.0.0
-        #   restart: always
-        #   container_name: gpt-node
-        #   links:
-        #     - db-gpt
-        #   env_file:
-        #     - .env.gpt
-        #   command: npm run start:prod
-        #   depends_on:
-        #     - db-gpt
-        #     - rabbitmq
+  telegram:
+    image: bogdanmarchukv/telegram-gpt:v1.0.0
+    restart: always
+    container_name: telegram_node
+    links:
+      - db-telegram
+    env_file:
+      - .env.telegram
+    command: npm run start:prod
+    depends_on:
+      - db-telegram
+      - rabbitmq
+  gpt:
+    image: bogdanmarchukv/gpt-node:v1.0.0
+    restart: always
+    container_name: gpt-node
+    links:
+      - db-gpt
+    env_file:
+      - .env.gpt
+    command: npm run start:prod
+    depends_on:
+      - db-gpt
+      - rabbitmq
 
 volumes:
   pgdata-telegramm:
