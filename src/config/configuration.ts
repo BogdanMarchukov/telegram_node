@@ -15,5 +15,5 @@ export default (): Config => ({
   [RootKeys.GptQueue]: process.env.GPT_QUEUE,
   [RootKeys.LogChatId]: process.env.LOG_CHAT_ID,
   [RootKeys.NotificationChatId]: parseInt(process.env.NOTIFICATION_CHAT_ID),
-  [RootKeys.RmqUrl]: process.env.RMQ_URL,
+  [RootKeys.RmqUrl]: 'amqp://' + process.env.RMQ_URL + ':5672',
 });
