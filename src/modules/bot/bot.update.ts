@@ -67,10 +67,13 @@ export class BotUpdate {
   @Hears('Новый чат')
   async createNawChat(ctx: Context) {
     const user: User = ctx.state.user.user;
-    this.botService.senderToGpt(ctx, () => this.botService.createNawChat(user, `Привет, меня зовут ${user.firstName || user.userName}`));
+    const data = await this.botService.senderToGpt(ctx, () =>
+      this.botService.createNawChat(user, `Привет, меня зовут ${user.firstName || user.userName}`),
+    );
     await user.update({
-      activeChatId: user.id,
+      activeChatId: data.id,
     });
+    await ctx.reply(this.botService.getAssistantText(data.message));
   }
 
   @Hears('VPN')
@@ -101,30 +104,31 @@ export class BotUpdate {
   }
 
   @On('message')
-  async sendNotification(ctx: any) {
+  async continueChat(ctx: any) {
     const user: User = ctx.state.user.user;
     const message = ctx.message?.text;
+    console.log(message, 'messate');
+
     if (user.isAdmin && user.id === this.lastActiveAdminNewsletter?.id && message) {
       await this.notificationService.sendNotification(message);
       this.lastActiveAdminNewsletter = undefined;
       ctx.reply('Рассылка выполненна', gptMainManu(user));
+      return;
     }
-  }
 
-  @On('message')
-  async continueChat(ctx: any) {
-    const user: User = ctx.state.user.user;
-    if (user.activeChatId && ctx?.message?.text) {
-      await this.botService.senderToGpt(ctx, () => {
+    if (user.activeChatId && message) {
+      const data = await this.botService.senderToGpt(ctx, () => {
         return this.botService.sendMessageToActiveChat(
           user.activeChatId,
           {
             role: RoleType.User,
-            content: ctx.message.text,
+            content: message,
           },
           user.id,
         );
       });
+
+      await ctx.reply(this.botService.getAssistantText(data.message));
     } else {
       await ctx.reply('Выберети услугу', mainManu());
     }

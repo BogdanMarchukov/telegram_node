@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { User } from '../../models/User.model';
-import { ClientProxy } from '@nestjs/microservices';
+import { ClientProxy, RpcException } from '@nestjs/microservices';
 import { timeout, timer } from 'rxjs';
 import { GptResponse, MessageGpt, RmqServise } from '../../common/types';
 import { InjectBot } from 'nestjs-telegraf';
@@ -15,18 +15,18 @@ export class BotService {
     private logService: MyLoggerService,
   ) { }
 
-  async senderToGpt(ctx: Context, cb: () => Promise<GptResponse>) {
+  async senderToGpt(ctx: Context, cb: () => Promise<GptResponse>): Promise<GptResponse> {
     const intervalStatus = timer(500, 5000).subscribe({
       next: () => this.bot.telegram.sendChatAction(ctx.chat.id, 'typing'),
     });
     try {
       const result = await cb();
-      await ctx.reply(this.getAssistantText(result.message));
       intervalStatus.unsubscribe();
+      return result;
     } catch (error) {
       intervalStatus.unsubscribe();
       this.logService.errorLogs(error, ctx.state.user.user);
-      ctx.reply('Ошибка');
+      throw new RpcException(error.message);
     }
   }
 
@@ -38,7 +38,7 @@ export class BotService {
           startMessage,
           userName: user.firstName,
         })
-        .pipe(timeout(2 * 60 * 1000))
+        .pipe(timeout(30 * 1000))
         .subscribe({
           next: (data) => resolve(data),
           error: (error) => reject(error),
@@ -54,6 +54,7 @@ export class BotService {
           message,
           commonId,
         })
+        .pipe(timeout(60 * 1000))
         .subscribe({
           next: (data) => resolve(data),
           error: (error) => reject(error),
@@ -76,7 +77,7 @@ export class BotService {
     });
   }
 
-  private getAssistantText(message: MessageGpt[]) {
+  getAssistantText(message: MessageGpt[]) {
     return message[message.length - 1].content;
   }
 }

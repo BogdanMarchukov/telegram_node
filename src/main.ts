@@ -1,5 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
+import { RpcExceptionFilter } from './common/exception/rpc-exception.filter';
 import { MyLoggerService } from './modules/my-logger/my-logger.service';
 
 async function bootstrap() {
@@ -7,6 +8,7 @@ async function bootstrap() {
     bufferLogs: true,
   });
   app.useLogger(app.get(MyLoggerService));
+  app.useGlobalFilters(new RpcExceptionFilter());
   await app.listen(3000);
 }
 bootstrap();
