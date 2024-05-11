@@ -25,4 +25,10 @@ export class UserLimit extends BaseModel<UserLimit> {
 
   @BelongsTo(() => User, 'userId')
   user?: NonAttribute<User>;
+
+  async decrementRequestAmount() {
+    if (this.requestAmount > 0) {
+      await this.update({ requestAmount: this.requestAmount - 1 });
+    }
+  }
 }

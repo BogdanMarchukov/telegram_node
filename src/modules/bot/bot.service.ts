@@ -6,7 +6,7 @@ import { GptResponse, MessageGpt, RmqServise } from '../../common/types';
 import { InjectBot } from 'nestjs-telegraf';
 import { Context, Telegraf } from 'telegraf';
 import { MyLoggerService } from '../my-logger/my-logger.service';
-import { UserLimit } from 'src/models/UserLimit.model';
+import { EventEmitterService } from '../event-emitter/event-emitter.service';
 
 @Injectable()
 export class BotService {
@@ -14,6 +14,7 @@ export class BotService {
     @Inject(RmqServise.GptService) private gptClient: ClientProxy,
     @InjectBot() private readonly bot: Telegraf<Context>,
     private logService: MyLoggerService,
+    private eventEmitterService: EventEmitterService,
   ) {}
 
   async senderToGpt(ctx: Context, cb: () => Promise<GptResponse>, user: User): Promise<GptResponse> {
@@ -22,8 +23,7 @@ export class BotService {
     });
     try {
       const result = await cb();
-      const userLimit = await UserLimit.findOne({ where: { userId: user.id } });
-      if
+      this.eventEmitterService.getRequestFromGpt(user);
       intervalStatus.unsubscribe();
       return result;
     } catch (error) {
@@ -82,9 +82,5 @@ export class BotService {
 
   getAssistantText(message: MessageGpt[]) {
     return message[message.length - 1].content;
-  }
-
-  private decrimentUserLimit(user: User) {
-
   }
 }

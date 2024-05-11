@@ -13,6 +13,7 @@ import { Limit } from './models/Limit.model';
 import { UserLimit } from './models/UserLimit.model';
 import { UserLimitModule } from './modules/user-limit/user-limit.module';
 import { EventEmitterModule } from '@nestjs/event-emitter';
+import { EventEmitterModule as EventModule } from './modules/event-emitter/event-emitter.module';
 
 @Module({
   imports: [
@@ -39,6 +40,7 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
     MetricsModule,
     NotificationModule,
     UserLimitModule,
+    EventModule,
   ],
 })
 export class AppModule {}
