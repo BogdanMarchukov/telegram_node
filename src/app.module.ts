@@ -8,6 +8,9 @@ import { MyLoggerModule } from './modules/my-logger/my-logger.module';
 import { MetricsModule } from './modules/metrics/metrics.module';
 import { NotificationModule } from './modules/notification/notification.module';
 import { RootKeys } from './config/type';
+import { Metric } from './models/Metric.model';
+import { Limit } from './models/Limit.model';
+import { UserLimit } from './models/UserLimit.model';
 
 @Module({
   imports: [
@@ -25,7 +28,7 @@ import { RootKeys } from './config/type';
         username: configService.get(RootKeys.Database)?.username,
         password: configService.get(RootKeys.Database)?.password,
         database: configService.get(RootKeys.Database)?.database,
-        models: [User],
+        models: [User, Metric, Limit, UserLimit],
       }),
       inject: [ConfigService],
     }),
@@ -34,4 +37,4 @@ import { RootKeys } from './config/type';
     NotificationModule,
   ],
 })
-export class AppModule { }
+export class AppModule {}

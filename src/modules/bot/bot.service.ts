@@ -13,7 +13,7 @@ export class BotService {
     @Inject(RmqServise.GptService) private gptClient: ClientProxy,
     @InjectBot() private readonly bot: Telegraf<Context>,
     private logService: MyLoggerService,
-  ) { }
+  ) {}
 
   async senderToGpt(ctx: Context, cb: () => Promise<GptResponse>): Promise<GptResponse> {
     const intervalStatus = timer(500, 5000).subscribe({

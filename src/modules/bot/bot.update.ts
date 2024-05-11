@@ -17,7 +17,7 @@ export class BotUpdate {
     private readonly logger: MyLoggerService,
     private readonly metricsService: MetricsService,
     private readonly notificationService: NotificationService,
-  ) { }
+  ) {}
 
   @Cron('0 10 * * *')
   async sentMetrics() {
