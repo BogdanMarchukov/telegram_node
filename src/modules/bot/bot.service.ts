@@ -6,6 +6,7 @@ import { GptResponse, MessageGpt, RmqServise } from '../../common/types';
 import { InjectBot } from 'nestjs-telegraf';
 import { Context, Telegraf } from 'telegraf';
 import { MyLoggerService } from '../my-logger/my-logger.service';
+import { UserLimit } from 'src/models/UserLimit.model';
 
 @Injectable()
 export class BotService {
@@ -15,12 +16,14 @@ export class BotService {
     private logService: MyLoggerService,
   ) {}
 
-  async senderToGpt(ctx: Context, cb: () => Promise<GptResponse>): Promise<GptResponse> {
+  async senderToGpt(ctx: Context, cb: () => Promise<GptResponse>, user: User): Promise<GptResponse> {
     const intervalStatus = timer(500, 5000).subscribe({
       next: () => this.bot.telegram.sendChatAction(ctx.chat.id, 'typing'),
     });
     try {
       const result = await cb();
+      const userLimit = await UserLimit.findOne({ where: { userId: user.id } });
+      if
       intervalStatus.unsubscribe();
       return result;
     } catch (error) {
@@ -79,5 +82,9 @@ export class BotService {
 
   getAssistantText(message: MessageGpt[]) {
     return message[message.length - 1].content;
+  }
+
+  private decrimentUserLimit(user: User) {
+
   }
 }

@@ -21,8 +21,8 @@ export class UserLimit extends BaseModel<UserLimit> {
   limitId: string;
 
   @BelongsTo(() => Limit, 'limitId')
-  Limit?: NonAttribute<Limit>;
+  limit?: NonAttribute<Limit>;
 
   @BelongsTo(() => User, 'userId')
-  User?: NonAttribute<User>;
+  user?: NonAttribute<User>;
 }

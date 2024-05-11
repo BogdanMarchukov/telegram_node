@@ -11,9 +11,12 @@ import { RootKeys } from './config/type';
 import { Metric } from './models/Metric.model';
 import { Limit } from './models/Limit.model';
 import { UserLimit } from './models/UserLimit.model';
+import { UserLimitModule } from './modules/user-limit/user-limit.module';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 
 @Module({
   imports: [
+    EventEmitterModule.forRoot(),
     ConfigModule.forRoot({
       isGlobal: true,
       load: [configuration],
@@ -35,6 +38,7 @@ import { UserLimit } from './models/UserLimit.model';
     MyLoggerModule,
     MetricsModule,
     NotificationModule,
+    UserLimitModule,
   ],
 })
 export class AppModule {}
