@@ -8,6 +8,9 @@ export class Limit extends BaseModel<Limit> {
   @Column
   requestAmount: number;
 
+  @Column
+  isDefault: boolean;
+
   @HasMany(() => UserLimit, {
     foreignKey: 'limitId',
   })

@@ -8,6 +8,8 @@ import { MyLoggerService } from '../my-logger/my-logger.service';
 import { MetricsService } from '../metrics/metrics.service';
 import { Cron } from '@nestjs/schedule';
 import { NotificationService } from '../notification/notification.service';
+import { UseGuards } from '@nestjs/common';
+import { UserGuard } from 'src/common/guards/user.guard';
 
 @Update()
 export class BotUpdate {
@@ -31,6 +33,7 @@ export class BotUpdate {
   }
 
   @Start()
+  @UseGuards(UserGuard)
   async start(ctx: Context) {
     const user: User = ctx.state.user.user;
     if (ctx.state.user.isNewUser) {
