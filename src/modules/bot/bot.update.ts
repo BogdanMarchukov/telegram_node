@@ -19,7 +19,7 @@ export class BotUpdate {
     private readonly logger: MyLoggerService,
     private readonly metricsService: MetricsService,
     private readonly notificationService: NotificationService,
-  ) { }
+  ) {}
 
   @Cron('0 10 * * *')
   async sentMetrics() {
@@ -29,7 +29,7 @@ export class BotUpdate {
 
   @Cron('59 23 * * *')
   async setActiveUserForDay() {
-    this.metricsService.setMetricsForDay();
+    await this.metricsService.setMetricsForDay();
   }
 
   @Start()

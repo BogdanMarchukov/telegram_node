@@ -31,4 +31,11 @@ export class UserLimit extends BaseModel<UserLimit> {
       await this.update({ requestAmount: this.requestAmount - 1 });
     }
   }
+
+  async resetRequestAmount() {
+    const limit = await Limit.findByPk(this.limitId);
+    if (limit) {
+      await this.update({ requestAmount: limit.requestAmount });
+    }
+  }
 }

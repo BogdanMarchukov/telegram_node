@@ -5,7 +5,6 @@ import { timeout, timer } from 'rxjs';
 import { GptResponse, MessageGpt, RmqServise } from '../../common/types';
 import { InjectBot } from 'nestjs-telegraf';
 import { Context, Telegraf } from 'telegraf';
-import { MyLoggerService } from '../my-logger/my-logger.service';
 import { EventEmitterService } from '../event-emitter/event-emitter.service';
 
 @Injectable()

@@ -43,4 +43,4 @@ import { EventEmitterModule as EventModule } from './modules/event-emitter/event
     EventModule,
   ],
 })
-export class AppModule { }
+export class AppModule {}
