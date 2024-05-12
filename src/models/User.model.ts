@@ -1,5 +1,7 @@
-import { Column, Table } from 'sequelize-typescript';
+import { NonAttribute } from 'sequelize';
+import { AfterFind, AfterUpdate, Column, HasOne, Table } from 'sequelize-typescript';
 import { BaseModel } from './Base.model';
+import { UserLimit } from './UserLimit.model';
 
 @Table({ tableName: 'users', modelName: 'user' })
 export class User extends BaseModel<User> {
@@ -20,4 +22,17 @@ export class User extends BaseModel<User> {
 
   @Column
   isAdmin: boolean;
+
+  @Column
+  isActive: boolean;
+
+  @HasOne(() => UserLimit, {
+    foreignKey: 'userId',
+  })
+  userLimit?: NonAttribute<UserLimit>;
+
+  @AfterFind
+  private static updateLastActive(model: User) {
+    model.update({ lastActiveAt: new Date() });
+  }
 }

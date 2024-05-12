@@ -8,6 +8,8 @@ import { MyLoggerService } from '../my-logger/my-logger.service';
 import { MetricsService } from '../metrics/metrics.service';
 import { Cron } from '@nestjs/schedule';
 import { NotificationService } from '../notification/notification.service';
+import { UseGuards } from '@nestjs/common';
+import { UserGuard } from 'src/common/guards/user.guard';
 
 @Update()
 export class BotUpdate {
@@ -31,6 +33,7 @@ export class BotUpdate {
   }
 
   @Start()
+  @UseGuards(UserGuard)
   async start(ctx: Context) {
     const user: User = ctx.state.user.user;
     if (ctx.state.user.isNewUser) {
@@ -67,12 +70,11 @@ export class BotUpdate {
   @Hears('Новый чат')
   async createNawChat(ctx: Context) {
     const user: User = ctx.state.user.user;
-    const data = await this.botService.senderToGpt(ctx, () =>
-      this.botService.createNawChat(user, `Привет, меня зовут ${user.firstName || user.userName}`),
+    const data = await this.botService.senderToGpt(
+      ctx,
+      () => this.botService.createNawChat(user, `Привет, меня зовут ${user.firstName || user.userName}`),
+      user,
     );
-    await user.update({
-      activeChatId: data.id,
-    });
     await ctx.reply(this.botService.getAssistantText(data.message));
   }
 
@@ -97,9 +99,13 @@ export class BotUpdate {
     const fileId = ctx?.update?.message?.voice?.file_id;
     if (user && fileId && user.activeChatId) {
       const href = (await ctx.telegram.getFileLink(ctx.update.message.voice.file_id)).toString();
-      await this.botService.senderToGpt(ctx, () => {
-        return this.botService.sendAudioMessage(user.activeChatId, href, user.id);
-      });
+      await this.botService.senderToGpt(
+        ctx,
+        () => {
+          return this.botService.sendAudioMessage(user.activeChatId, href, user.id);
+        },
+        user,
+      );
     }
   }
 
@@ -117,16 +123,20 @@ export class BotUpdate {
     }
 
     if (user.activeChatId && message) {
-      const data = await this.botService.senderToGpt(ctx, () => {
-        return this.botService.sendMessageToActiveChat(
-          user.activeChatId,
-          {
-            role: RoleType.User,
-            content: message,
-          },
-          user.id,
-        );
-      });
+      const data = await this.botService.senderToGpt(
+        ctx,
+        () => {
+          return this.botService.sendMessageToActiveChat(
+            user.activeChatId,
+            {
+              role: RoleType.User,
+              content: message,
+            },
+            user.id,
+          );
+        },
+        user,
+      );
 
       await ctx.reply(this.botService.getAssistantText(data.message));
     } else {

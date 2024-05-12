@@ -50,3 +50,10 @@ export type GptResponse = {
 export enum RmqServise {
   GptService = 'GPT_SERVICE',
 }
+
+export enum ErrorMessage {
+  REQUEST_LIMIT = 'Суточный лимит исчерпан.',
+  SYSTEM_ERROR_USER_NOT_FOUND = 'SYSTEM_ERROR_USER_NOT_FOUND',
+  SYSTEM_ERROR_USER_LIMIT_NOT_FOUND = 'SYSTEM_ERROR_USER_LIMIT_NOT_FOUND',
+  DEFAULT = 'Доступ запрещен',
+}

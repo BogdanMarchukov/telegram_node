@@ -6,27 +6,28 @@ import { GptResponse, MessageGpt, RmqServise } from '../../common/types';
 import { InjectBot } from 'nestjs-telegraf';
 import { Context, Telegraf } from 'telegraf';
 import { MyLoggerService } from '../my-logger/my-logger.service';
+import { EventEmitterService } from '../event-emitter/event-emitter.service';
 
 @Injectable()
 export class BotService {
   constructor(
     @Inject(RmqServise.GptService) private gptClient: ClientProxy,
     @InjectBot() private readonly bot: Telegraf<Context>,
-    private logService: MyLoggerService,
-  ) { }
+    private eventEmitterService: EventEmitterService,
+  ) {}
 
-  async senderToGpt(ctx: Context, cb: () => Promise<GptResponse>): Promise<GptResponse> {
+  async senderToGpt(ctx: Context, cb: () => Promise<GptResponse>, user: User): Promise<GptResponse> {
     const intervalStatus = timer(500, 5000).subscribe({
       next: () => this.bot.telegram.sendChatAction(ctx.chat.id, 'typing'),
     });
     try {
       const result = await cb();
+      this.eventEmitterService.getRequestFromGpt(user);
       intervalStatus.unsubscribe();
       return result;
     } catch (error) {
       intervalStatus.unsubscribe();
-      this.logService.errorLogs(error, ctx.state.user.user);
-      throw new RpcException(error.message);
+      throw new RpcException(error);
     }
   }
 

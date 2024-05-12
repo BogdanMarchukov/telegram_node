@@ -11,9 +11,11 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { NotificationModule } from '../notification/notification.module';
 import { RmqServise } from 'src/common/types';
 import { RootKeys } from 'src/config/type';
+import { EventEmitterModule } from '../event-emitter/event-emitter.module';
 
 @Module({
   imports: [
+    EventEmitterModule,
     ScheduleModule.forRoot(),
     MetricsModule,
     TelegrafModule.forRootAsync({

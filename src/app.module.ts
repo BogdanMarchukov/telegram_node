@@ -8,9 +8,16 @@ import { MyLoggerModule } from './modules/my-logger/my-logger.module';
 import { MetricsModule } from './modules/metrics/metrics.module';
 import { NotificationModule } from './modules/notification/notification.module';
 import { RootKeys } from './config/type';
+import { Metric } from './models/Metric.model';
+import { Limit } from './models/Limit.model';
+import { UserLimit } from './models/UserLimit.model';
+import { UserLimitModule } from './modules/user-limit/user-limit.module';
+import { EventEmitterModule } from '@nestjs/event-emitter';
+import { EventEmitterModule as EventModule } from './modules/event-emitter/event-emitter.module';
 
 @Module({
   imports: [
+    EventEmitterModule.forRoot(),
     ConfigModule.forRoot({
       isGlobal: true,
       load: [configuration],
@@ -25,13 +32,15 @@ import { RootKeys } from './config/type';
         username: configService.get(RootKeys.Database)?.username,
         password: configService.get(RootKeys.Database)?.password,
         database: configService.get(RootKeys.Database)?.database,
-        models: [User],
+        models: [User, Metric, Limit, UserLimit],
       }),
       inject: [ConfigService],
     }),
     MyLoggerModule,
     MetricsModule,
     NotificationModule,
+    UserLimitModule,
+    EventModule,
   ],
 })
 export class AppModule { }
