@@ -75,9 +75,6 @@ export class BotUpdate {
       () => this.botService.createNawChat(user, `Привет, меня зовут ${user.firstName || user.userName}`),
       user,
     );
-    await user.update({
-      activeChatId: data.id,
-    });
     await ctx.reply(this.botService.getAssistantText(data.message));
   }
 

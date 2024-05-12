@@ -5,7 +5,6 @@ import { timeout, timer } from 'rxjs';
 import { GptResponse, MessageGpt, RmqServise } from '../../common/types';
 import { InjectBot } from 'nestjs-telegraf';
 import { Context, Telegraf } from 'telegraf';
-import { MyLoggerService } from '../my-logger/my-logger.service';
 import { EventEmitterService } from '../event-emitter/event-emitter.service';
 
 @Injectable()
@@ -13,7 +12,6 @@ export class BotService {
   constructor(
     @Inject(RmqServise.GptService) private gptClient: ClientProxy,
     @InjectBot() private readonly bot: Telegraf<Context>,
-    private logService: MyLoggerService,
     private eventEmitterService: EventEmitterService,
   ) {}
 
@@ -28,8 +26,7 @@ export class BotService {
       return result;
     } catch (error) {
       intervalStatus.unsubscribe();
-      this.logService.errorLogs(error, ctx.state.user.user);
-      throw new RpcException(error.message);
+      throw new RpcException(error);
     }
   }
 
