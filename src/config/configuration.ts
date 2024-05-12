@@ -1,17 +1,19 @@
 import * as process from 'process';
+import { Config, RootKeys } from './type';
 
-export default () => ({
-  token: process.env.TOKEN,
-  url: process.env.URL,
-  database: {
+export default (): Config => ({
+  [RootKeys.Token]: process.env.TOKEN,
+  [RootKeys.Url]: process.env.URL,
+  [RootKeys.Database]: {
     dialect: 'postgres',
     host: process.env.POSTGRES_HOST,
     username: process.env.POSTGRES_USER,
     database: process.env.POSTGRES_DATABASE,
     password: process.env.POSTGRES_PASSWORD,
-    port: process.env.POSTGRES_PORT,
+    port: parseInt(process.env.POSTGRES_PORT),
   },
-  gpt_queue: process.env.GPT_QUEUE,
-  logChatId: process.env.LOG_CHAT_ID,
-  notificationChatId: process.env.NOTIFICATION_CHAT_ID,
+  [RootKeys.GptQueue]: process.env.GPT_QUEUE,
+  [RootKeys.LogChatId]: process.env.LOG_CHAT_ID,
+  [RootKeys.NotificationChatId]: parseInt(process.env.NOTIFICATION_CHAT_ID),
+  [RootKeys.RmqUrl]: 'amqp://' + process.env.RMQ_URL + ':5672',
 });

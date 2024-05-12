@@ -1,25 +1,33 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { User } from '../../models/User.model';
-import { ClientProxy } from '@nestjs/microservices';
+import { ClientProxy, RpcException } from '@nestjs/microservices';
 import { timeout, timer } from 'rxjs';
-import { GptResponse, MessageGpt } from '../../common/types';
+import { GptResponse, MessageGpt, RmqServise } from '../../common/types';
 import { InjectBot } from 'nestjs-telegraf';
 import { Context, Telegraf } from 'telegraf';
+import { EventEmitterService } from '../event-emitter/event-emitter.service';
 
 @Injectable()
 export class BotService {
   constructor(
-    @Inject('GPT_SERVICE') private gptClient: ClientProxy,
+    @Inject(RmqServise.GptService) private gptClient: ClientProxy,
     @InjectBot() private readonly bot: Telegraf<Context>,
+    private eventEmitterService: EventEmitterService,
   ) {}
 
-  async senderToGpt(ctx: any, cb: () => Promise<GptResponse>) {
+  async senderToGpt(ctx: Context, cb: () => Promise<GptResponse>, user: User): Promise<GptResponse> {
     const intervalStatus = timer(500, 5000).subscribe({
       next: () => this.bot.telegram.sendChatAction(ctx.chat.id, 'typing'),
     });
-    const result = await cb();
-    intervalStatus.unsubscribe();
-    await ctx.reply(this.getAssistantText(result.message));
+    try {
+      const result = await cb();
+      this.eventEmitterService.getRequestFromGpt(user);
+      intervalStatus.unsubscribe();
+      return result;
+    } catch (error) {
+      intervalStatus.unsubscribe();
+      throw new RpcException(error);
+    }
   }
 
   createNawChat(user: User, startMessage: string): Promise<GptResponse> {
@@ -30,7 +38,7 @@ export class BotService {
           startMessage,
           userName: user.firstName,
         })
-        .pipe(timeout(2 * 60 * 1000))
+        .pipe(timeout(30 * 1000))
         .subscribe({
           next: (data) => resolve(data),
           error: (error) => reject(error),
@@ -38,11 +46,7 @@ export class BotService {
     });
   }
 
-  sendMessageToActiveChat(
-    activeChatId: string,
-    message: MessageGpt,
-    commonId,
-  ): Promise<GptResponse> {
+  sendMessageToActiveChat(activeChatId: string, message: MessageGpt, commonId: string): Promise<GptResponse> {
     return new Promise((resolve, reject) => {
       this.gptClient
         .send('continueChat', {
@@ -50,6 +54,7 @@ export class BotService {
           message,
           commonId,
         })
+        .pipe(timeout(60 * 1000))
         .subscribe({
           next: (data) => resolve(data),
           error: (error) => reject(error),
@@ -57,11 +62,7 @@ export class BotService {
     });
   }
 
-  sendAudioMessage(
-    activeChatId: string,
-    href: string,
-    commonId: string,
-  ): Promise<GptResponse> {
+  sendAudioMessage(activeChatId: string, href: string, commonId: string): Promise<GptResponse> {
     return new Promise((resolve, reject) => {
       this.gptClient
         .send('replayAudio', {

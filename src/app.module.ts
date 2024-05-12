@@ -7,9 +7,17 @@ import { User } from './models/User.model';
 import { MyLoggerModule } from './modules/my-logger/my-logger.module';
 import { MetricsModule } from './modules/metrics/metrics.module';
 import { NotificationModule } from './modules/notification/notification.module';
+import { RootKeys } from './config/type';
+import { Metric } from './models/Metric.model';
+import { Limit } from './models/Limit.model';
+import { UserLimit } from './models/UserLimit.model';
+import { UserLimitModule } from './modules/user-limit/user-limit.module';
+import { EventEmitterModule } from '@nestjs/event-emitter';
+import { EventEmitterModule as EventModule } from './modules/event-emitter/event-emitter.module';
 
 @Module({
   imports: [
+    EventEmitterModule.forRoot(),
     ConfigModule.forRoot({
       isGlobal: true,
       load: [configuration],
@@ -18,19 +26,21 @@ import { NotificationModule } from './modules/notification/notification.module';
     SequelizeModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => ({
-        dialect: configService.get('database.dialect') || 'postgres',
-        host: configService.get('database.host') || '127.0.0.1',
-        port: +configService.get('database.port') || 5430,
-        username: configService.get('database.userName') || 'postgres',
-        password: configService.get('database.password') || 'mysecretpassword',
-        database: configService.get('database.database') || 'postgres',
-        models: [User],
+        dialect: configService.get(RootKeys.Database)?.dialect,
+        host: configService.get(RootKeys.Database)?.host,
+        port: configService.get(RootKeys.Database)?.port,
+        username: configService.get(RootKeys.Database)?.username,
+        password: configService.get(RootKeys.Database)?.password,
+        database: configService.get(RootKeys.Database)?.database,
+        models: [User, Metric, Limit, UserLimit],
       }),
       inject: [ConfigService],
     }),
     MyLoggerModule,
     MetricsModule,
     NotificationModule,
+    UserLimitModule,
+    EventModule,
   ],
 })
 export class AppModule {}
